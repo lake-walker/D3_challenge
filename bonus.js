@@ -41,7 +41,7 @@ function xScale(data, chosenXAxis) {
 }
 
 // render xAxis functions
-function renderAxes(newXScale, xAxis) {
+function renderXAxes(newXScale, xAxis) {
     var bottomAxis = d3.axisBottom(newXScale);
 
     xAxis.transition()
@@ -62,4 +62,30 @@ function yScale(data, chosenYAxis) {
 
     return yLinearScale;
 }
+
+// render xAxis functions
+function renderYAxes(newYScale, yAxis) {
+    var leftAxis = d3.axisBottom(newYScale);
+
+    yAxis.transition()
+        .duration(1000)
+        .call(leftAxis);
+
+    return yAxis;
+}
+
+// function used for updating circles group with transition
+
+function renderCircles(circlesGroup, newXScale, newYScale, chosenXAxis, chosenYAxis) {
+
+    circlesGroup.transition()
+        .duration(1000)
+        .attr('cx', d => newXScale(d[chosenXAxis]))
+        .attr('cy', d => newYScale(d[chosenYAxis]));
+
+    return circlesGroup;
+}
+
+// function used for updating circles group with new tooltip
+functtion updateToolTip(chosen)
 
