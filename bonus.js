@@ -88,23 +88,34 @@ function renderCircles(circlesGroup, newXScale, newYScale, chosenXAxis, chosenYA
 
 // function used for updating circles group with new tooltip
 function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
-    var label;
+    var xlabel;
+    var ylabel;
 
     if (chosenXAxis === 'poverty') {
-        label = 'poverty'
+        xlabel = 'poverty'
     }
     else if (chosenXAxis === 'age') {
-        label = 'p'
+        xlabel = 'age'
     }
     else {
-        label = 'income'
+        xlabel = 'income'
+    }
+
+    if (chosenYAxis === 'healthcare') {
+        ylabel = 'healthcare'
+    }
+    else if (chosenYAxis === 'smokes') {
+        ylabel = 'smokes'
+    }
+    else {
+        ylabel = 'obesity'
     }
 
     var toolTip = d3.tip()
         .attr('class', 'tooltip')
         .offest([80, -60])
         .html(function (d) {
-            return (`${d.state}<br>${label} ${d[chosenXAxis]}`);
+            return (`${d.state}<br>${xlabel} ${d[chosenXAxis]}<br>${ylabel} ${d[chosenYAxis]}`);
         });
     
     circlesGroup.call(toolTip);
@@ -185,4 +196,87 @@ d3.csv('data.csv').then(function(data, err) {
         .attr('value', 'income')
         .classed('active', true)
         .text('Household Income (Median)');
+
+    // Create group for y-axis labels
+    var YLabelsGroup = chartGroup.appen('g')
+        .attr('transform', `translate(${height / 2}, ${widht + 20}`);
+    
+    var lhealthcareLabel = YlabelsGroup.append('text')
+        .attr('x', 0)
+        .attr('y', 20)
+        .attr('value', 'healthcare')
+        .classed('active', true)
+        .text('Lacks Healthcare (%)');
+    
+    var smokesLabel = YlabelsGroup.append('text')
+        .attr('x', 0)
+        .attr('y', 20)
+        .attr('value', 'smokes')
+        .classed('active', true)
+        .text('Smokes (%)');
+        
+    var obesityLabel = YlabelsGroup.append('text')
+        .attr('x', 0)
+        .attr('y', 20)
+        .attr('value', 'obesity')
+        .classed('active', true)
+        .text('Obesity (%)');
+    
+    // append y axis
+    chartGroup.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - margin.left)
+        .attr("x", 0 - (height / 2))
+        .attr("dy", "1em")
+        .classed("axis-text", true)
+        .text("Number of Billboard 500 Hits");
+    
+    // update ToolTip function 
+    var circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
+
+    // x axis labels event listener
+    XlabelsGroup.selectAll("text")
+    .on("click", function() {
+      // get value of selection
+      var xvalue = d3.select(this).attr("value");
+      if (xvalue !== chosenXAxis) {
+
+        // replaces chosenXAxis with value
+        chosenXAxis = xvalue;
+
+        console.log(chosenXAxis)
+
+        // functions here found above csv import
+        // updates x scale for new data
+        xLinearScale = xScale(hairData, chosenXAxis);
+
+        // updates x axis with transition
+        xAxis = renderAxes(xLinearScale, xAxis);
+
+        // updates circles with new x values
+        circlesGroup = renderCircles(circlesGroup, xLinearScale, chosenXAxis);
+
+        // updates tooltips with new info
+        circlesGroup = updateToolTip(chosenXAxis, circlesGroup);
+
+        // changes classes to change bold text
+        if (chosenXAxis === "num_albums") {
+          albumsLabel
+            .classed("active", true)
+            .classed("inactive", false);
+          hairLengthLabel
+            .classed("active", false)
+            .classed("inactive", true);
+        }
+        else {
+          albumsLabel
+            .classed("active", false)
+            .classed("inactive", true);
+          hairLengthLabel
+            .classed("active", true)
+            .classed("inactive", false);
+        }
+      }
+    });
+    
 })
