@@ -56,7 +56,7 @@ function yScale(data, chosenYAxis) {
     // create scales
     var yLinearScale = d3.scaleLinear()
         .domain([d3.min(data, d => d[chosenYAxis]) * 0.8,
-            d3.max(data, d =>[chosenYAxis]) * 1.2
+            d3.max(data, d => d[chosenYAxis]) * 1.2
         ])
         .range([0, height]);
 
@@ -113,7 +113,7 @@ function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
 
     var toolTip = d3.tip()
         .attr('class', 'tooltip')
-        .offest([80, -60])
+        .offset([80, -60])
         .html(function (d) {
             return (`${d.state}<br>${xlabel} ${d[chosenXAxis]}<br>${ylabel} ${d[chosenYAxis]}`);
         });
@@ -146,7 +146,7 @@ d3.csv('data.csv').then(function(data, err) {
     // create y scale function
     var yLinearScale = d3.scaleLinear()
         .domain([0, d3.max(data, d => d.poverty)])
-        .range([height, o]);
+        .range([height, 0]);
     
     // initial axis functions
     var bottomAxis = d3.axisBottom(xLinearScale);
@@ -198,10 +198,10 @@ d3.csv('data.csv').then(function(data, err) {
         .text('Household Income (Median)');
 
     // Create group for y-axis labels
-    var YLabelsGroup = chartGroup.appen('g')
-        .attr('transform', `translate(${height / 2}, ${widht + 20}`);
+    var YlabelsGroup = chartGroup.append('g')
+        .attr('transform', `translate(${height / 2}, ${width + 20}`);
     
-    var lhealthcareLabel = YlabelsGroup.append('text')
+    var healthcareLabel = YlabelsGroup.append('text')
         .attr('x', 0)
         .attr('y', 20)
         .attr('value', 'healthcare')
@@ -244,14 +244,14 @@ d3.csv('data.csv').then(function(data, err) {
         // replaces chosenXAxis with value
         chosenXAxis = xvalue;
 
-        console.log(chosenXAxis)
+        console.log(chosenXAxis);
 
         // functions here found above csv import
         // updates x scale for new data
-        xLinearScale = xScale(hairData, chosenXAxis);
+        xLinearScale = xScale(data, chosenXAxis);
 
         // updates x axis with transition
-        xAxis = renderAxes(xLinearScale, xAxis);
+        xAxis = renderXAxes(xLinearScale, xAxis);
 
         // updates circles with new x values
         circlesGroup = renderCircles(circlesGroup, xLinearScale, chosenXAxis);
@@ -260,23 +260,102 @@ d3.csv('data.csv').then(function(data, err) {
         circlesGroup = updateToolTip(chosenXAxis, circlesGroup);
 
         // changes classes to change bold text
-        if (chosenXAxis === "num_albums") {
-          albumsLabel
-            .classed("active", true)
-            .classed("inactive", false);
-          hairLengthLabel
-            .classed("active", false)
-            .classed("inactive", true);
+        if (chosenXAxis === "poverty") {
+            povertyLabel
+                .classed("active", true)
+                .classed("inactive", false);
+            ageLabel
+                .classed("active", false)
+                .classed("inactive", true);
+            incomeLabel
+                .classed("active", false)
+                .classed("inactive", true);
         }
-        else {
-          albumsLabel
-            .classed("active", false)
-            .classed("inactive", true);
-          hairLengthLabel
-            .classed("active", true)
-            .classed("inactive", false);
+        else if (chosenXAxis === 'age') {
+            povertyLabel
+                .classed("active", false)
+                .classed("inactive", true);
+            ageLabel
+                .classed("active", true)
+                .classed("inactive", false);
+            incomeLabel
+                .classed("active", false)
+                .classed("inactive", true);
         }
-      }
+        else if (chosenXAxis === 'income') {
+            povertyLabel
+                .classed("active", false)
+                .classed("inactive", true);
+            ageLabel
+                .classed("active", true)
+                .classed("inactive", false);
+            incomeLabel
+                .classed("active", true)
+                .classed("inactive", false);
+        }
+    }
     });
-    
-})
+    // x axis labels event listener
+    YlabelsGroup.selectAll("text")
+    .on("click", function() {
+      // get value of selection
+      var yvalue = d3.select(this).attr("value");
+      if (yvalue !== chosenYAxis) {
+
+        // replaces chosenXAxis with value
+        chosenXAxis = yvalue;
+
+        console.log(chosenYAxis);
+
+        // functions here found above csv import
+        // updates x scale for new data
+        yLinearScale = yScale(data, chosenYAxis);
+
+        // updates x axis with transition
+        yAxis = renderYAxes(yLinearScale, yAxis);
+
+        // updates circles with new x values
+        circlesGroup = renderCircles(circlesGroup, yLinearScale, chosenYAxis);
+
+        // updates tooltips with new info
+        circlesGroup = updateToolTip(chosenYAxis, circlesGroup);
+
+        // changes classes to change bold text
+        if (chosenYAxis === "healthcare") {
+            healthcareLabel
+                .classed("active", true)
+                .classed("inactive", false);
+            smokesLabel
+                .classed("active", false)
+                .classed("inactive", true);
+            obesityLabel
+                .classed("active", false)
+                .classed("inactive", true);
+        }
+        else if (chosenYAxis === 'smokes') {
+            healthcareLabel
+                .classed("active", false)
+                .classed("inactive", true);
+            smokesLabel
+                .classed("active", true)
+                .classed("inactive", false);
+            obesityLabel
+                .classed("active", false)
+                .classed("inactive", true);
+        }
+        else if (chosenYAxis === 'obesity') {
+            healthcareLabel
+                .classed("active", false)
+                .classed("inactive", true);
+            smokesLabel
+                .classed("active", false)
+                .classed("inactive", true);
+            obesityLabel
+                .classed("active", true)
+                .classed("inactive", false);
+        }
+    }
+    });  
+}).catch(function(error) {
+    console.log(error);
+});
